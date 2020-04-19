@@ -8,8 +8,10 @@ use amethyst::{
     },
     utils::application_root_dir,
 };
+use amethyst::input::{InputBundle, StringBindings};
 
 mod pong;
+mod systems;
 use crate::pong::Pong;
 
 fn main() -> amethyst::Result<()> {
@@ -19,6 +21,10 @@ fn main() -> amethyst::Result<()> {
     // load display.ron to modify window size/title w/o recompiling
     let app_root = application_root_dir()?;
     let display_config_path = app_root.join("config").join("display.ron");
+    let binding_path = app_root.join("config").join("bindings.ron");  
+
+    let input_bundle = InputBundle::<StringBindings>::new()
+        .with_bindings_from_file(binding_path)?;
 
     // basic application setup
     let game_data = GameDataBuilder::default()
@@ -33,7 +39,9 @@ fn main() -> amethyst::Result<()> {
                 // RenderFlat2D plugin is used to render entities witha 'SpriteRender' component.
                 .with_plugin(RenderFlat2D::default()),
         )?
-        .with_bundle(TransformBundle::new())?;
+        .with_bundle(TransformBundle::new())?
+        .with_bundle(input_bundle)?
+        .with(systems::PaddleSystem, "paddle_system", &["input_system"]);
 
 
     let assets_dir = app_root.join("assets");
