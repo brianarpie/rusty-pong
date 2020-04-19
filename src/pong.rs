@@ -47,16 +47,11 @@ impl Component for Paddle {
     type Storage = DenseVecStorage<Self>;
 }
 
-impl Component for Ball {
-    type Storage = DenseVecStorage<Self>;
-}
-
 impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
         let sprite_sheet_handle = load_sprite_sheet(world);
-
-        // no longer needed
+        // no longer needed now that a system uses the Paddle component
         // world.register::<Paddle>();
 
         world.register::<Ball>();
