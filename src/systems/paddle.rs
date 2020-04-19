@@ -29,6 +29,14 @@ impl<'s> System<'s> for PaddleSystem {
                         Side::Right => "right",
                     };
                     println!("Side {:?} moving {}", side_name, mv_amount);
+                    // TODO: use amethyst::core::timing::Time instead of our factor of 1.2
+                    let scaled_amount = 1.2 * mv_amount as f32;
+                    let paddle_y = transform.translation().y;
+                    transform.set_translation_y(
+                        (paddle_y + scaled_amount)
+                        .min(ARENA_HEIGHT - PADDLE_HEIGHT * 0.5)
+                        .max(PADDLE_HEIGHT * 0.5),
+                    );
                 }
             }
 
