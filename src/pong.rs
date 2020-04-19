@@ -12,6 +12,9 @@ pub const ARENA_HEIGHT: f32 = 100.0;
 pub const ARENA_WIDTH: f32 = 100.0;
 pub const PADDLE_HEIGHT: f32 = 16.0;
 pub const PADDLE_WIDTH: f32 = 4.0;
+pub const BALL_VELOCITY_X: f32 = 75.0;
+pub const BALL_VELOCITY_Y: f32 = 50.0;
+pub const BALL_RADIUS: f32 = 2.0;
 
 #[derive(PartialEq, Eq)]
 pub enum Side {
@@ -23,6 +26,11 @@ pub struct Paddle {
     pub side: Side,
     pub width: f32,
     pub height: f32
+}
+
+pub struct Ball {
+    pub velocity: [f32; 2],
+    pub radius: f32
 }
 
 impl Paddle {
@@ -39,13 +47,22 @@ impl Component for Paddle {
     type Storage = DenseVecStorage<Self>;
 }
 
+impl Component for Ball {
+    type Storage = DenseVecStorage<Self>;
+}
+
 impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
         let sprite_sheet_handle = load_sprite_sheet(world);
-        world.register::<Paddle>();
 
-        initialize_paddles(world, sprite_sheet_handle);
+        // no longer needed
+        // world.register::<Paddle>();
+
+        world.register::<Ball>();
+
+        initialize_paddles(world, sprite_sheet_handle.clone());
+        initialize_ball(world, sprite_sheet_handle);
         initialize_camera(world);
     }
 }
@@ -91,6 +108,29 @@ fn initialize_paddles(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet
         .with(sprite_render)
         .with(Paddle::new(Side::Right))
         .with(right_transform)
+        .build();
+}
+
+// initializes one ball in the middle-ish of the arena
+fn initialize_ball(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
+    // create the translation
+    let mut local_transform = Transform::default();
+    local_transform.set_translation_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
+
+    // assign the sprite
+    let sprite_render = SpriteRender {
+        sprite_sheet: sprite_sheet_handle,
+        sprite_number: 1, // index = 1 for ball in sprite sheet
+    };
+
+    world
+        .create_entity()
+        .with(sprite_render)
+        .with(Ball {
+            radius: BALL_RADIUS,
+            velocity: [ BALL_VELOCITY_X, BALL_VELOCITY_Y ]
+        })
+        .with(local_transform)
         .build();
 }
 
